@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio'S Form | Sound/AREA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            color: #fff;
+            background: linear-gradient(135deg, #000 0%, #111 100%);
+        }
+        
+        /* Фон в виде пчелиных сот */
+        .honeycomb-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(30deg, #000 25%, transparent 25.5%) 0 0,
+                linear-gradient(150deg, #000 25%, transparent 25.5%) 25px -44px,
+                linear-gradient(30deg, #000 25%, transparent 25.5%) 50px 0,
+                linear-gradient(150deg, #000 25%, transparent 25.5%) 75px -44px,
+                linear-gradient(30deg, #000 25%, transparent 25.5%) 100px 0;
+            background-size: 100px 88px;
+            background-color: #0a0a0a;
+            opacity: 0.5;
+            z-index: -1;
+            animation: glitch-bg 8s infinite;
+        }
+        
+        .container {
+            display: flex;
+            width: 95%;
+            max-width: 1400px;
+            height: 85vh;
+            background: rgba(8, 8, 8, 0.95);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 50px rgba(80, 80, 80, 0.3),
+                0 0 0 1px rgba(100, 100, 100, 0.4);
+            position: relative;
+        }
+        
+        /* Усиленные эффекты глитча для всего контейнера */
+        .container::before,
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+        }
+        
+        .container::before {
+            background: linear-gradient(rgba(255,0,0,0.2), rgba(0,255,0,0.2));
+            mix-blend-mode: screen;
+            animation: glitch 6s infinite;
+        }
+        
+        .container::after {
+            background: linear-gradient(rgba(0,0,255,0.2), rgba(255,255,0,0.2));
+            mix-blend-mode: screen;
+            animation: glitch 5s infinite reverse;
+        }
+        
+        /* Стили для медиаплеера */
+        .player-section {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid rgba(100, 100, 100, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .player-header {
+            text-align: right;
+            margin-bottom: 40px;
+            padding-right: 20px;
+            position: relative;
+        }
+        
+        .player-header h1 {
+            color: rgba(220, 220, 220, 0.9);
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            position: relative;
+            display: inline-block;
+            padding: 5px 0;
+            background: transparent;
+            animation: text-glitch 5s infinite;
+        }
+        
+        /* Стили для кнопок плеера */
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .track-info {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            animation: glitch-flicker 12s infinite;
+        }
+        
+        .track-info h2 {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            letter-spacing: 2px;
+            animation: text-break 15s infinite;
+        }
+        
+        .track-info p {
+            color: #aaa;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            animation: text-break 18s infinite;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+        }
+        
+        .progress {
+            height: 100%;
+            width: 30%;
+            background: #fff;
+            border-radius: 3px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+        
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 35px;
+            margin-top: 15px;
+            position: relative;
+            z-index: 15;
+        }
+        
+        .player-btn {
+            width: 75px;
+            height: 55px;
+            border-radius: 10px;
+            border: 1px solid rgba(180, 180, 180, 0.4);
+            background: rgba(25, 25, 25, 0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.6rem;
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+            animation: btn-glitch 12s infinite;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .player-btn:hover {
+            background: rgba(120, 120, 120, 0.4);
+            transform: translateY(-5px);
+            border-color: rgba(220, 220, 220, 0.5);
+        }
+        
+        .play-btn {
+            width: 85px;
+            height: 65px;
+            font-size: 2rem;
+        }
+        
+        .player-btn i {
+            position: relative;
+            z-index: 2;
+            animation: icon-break 25s infinite;
+        }
+        
+        .player-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 25px;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(25deg);
+            transition: all 0.6s;
+        }
+        
+        .player-btn:hover::before {
+            left: 120%;
+        }
+        
+        /* Визуализатор под кнопками */
+        .audio-visualizer {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 20px;
+            z-index: 10;
+            opacity: 0.85;
+            padding: 0 10px;
+        }
+        
+        .bar {
+            width: 12px;
+            min-height: 5px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 2px;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 0 8px rgba(255, 255, 255, 0.7),
+                inset 0 0 5px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Стили для секции с изображением */
+        .image-section {
+            flex: 2;
+            position: relative;
+            overflow: hidden;
+            border-left: 1px solid rgba(100, 100, 100, 0.4);
+        }
+        
+        .tv-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.97);
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .image-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+            border: 3px solid rgba(100, 100, 100, 0.4);
+            z-index: 5;
+        }
+        
+        #displayed-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            filter: contrast(1.3) brightness(0.85);
+        }
+        
+        /* Усиленные эффекты старого телевизора */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(0, 0, 0, 0) 50%,
+                rgba(0, 0, 0, 0.5) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 6;
+            animation: scanline 2.5s linear infinite;
+            opacity: 0.9;
+        }
+        
+        .static {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4) 1px, transparent 1px, transparent 2px);
+            opacity: 0.25;
+            z-index: 7;
+            animation: static 0.08s infinite;
+        }
+        
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 220px rgba(0, 0, 0, 0.97);
+            z-index: 8;
+            pointer-events: none;
+        }
+        
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="1.0" numOctaves="2" stitchTiles="stitch"></feTurbulence></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.2"></rect></svg>');
+            mix-blend-mode: overlay;
+            opacity: 0.5;
+            z-index: 9;
+            animation: glitch-flicker 4s infinite;
+        }
+        
+        .glitch-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0) 70%, rgba(255,255,255,0.2) 80%, rgba(0,0,0,0) 90%);
+            z-index: 10;
+            animation: glitch-wave 6s infinite;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        
+        /* Эффекты "ломания" */
+        .lcd-break {
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 0, 0, 0.2);
+            z-index: 25;
+            animation: lcd-break 15s infinite;
+            pointer-events: none;
+        }
+        
+        /* Анимации с усилением */
+        @keyframes scanline {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 120%;
+            }
+        }
+        
+        @keyframes static {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 12px;
+            }
+        }
+        
+        @keyframes glitch {
+            0% { opacity: 0; transform: translate(0); }
+            2% { opacity: 0.3; transform: translate(-7px, 4px) skew(5deg); }
+            4% { opacity: 0; transform: translate(0); }
+            5% { opacity: 0.15; transform: translate(9px, -3px) skew(-7deg); }
+            6% { opacity: 0; transform: translate(0); }
+            98% { opacity: 0; transform: translate(0); }
+            99% { opacity: 0.4; transform: translate(5px, -4px) skew(3deg); }
+            100% { opacity: 0; transform: translate(0); }
+        }
+        
+        @keyframes glitch-bg {
+            0% { transform: translate(0); filter: hue-rotate(0); }
+            20% { transform: translate(3px, -2px) skew(2deg); }
+            40% { transform: translate(-4px, 2px) skew(-3deg); }
+            60% { transform: translate(2px, 3px); }
+            80% { transform: translate(-3px, -2px) skew(4deg); }
+            100% { transform: translate(0); filter: hue-rotate(360deg); }
+        }
+        
+        @keyframes glitch-flicker {
+            0%, 15%, 17%, 19%, 21%, 23%, 25%, 50%, 70%, 80%, 100% { opacity: 0.5; }
+            16%, 18%, 20%, 22%, 24%, 26% { opacity: 0.15; }
+        }
+        
+        @keyframes glitch-wave {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 0.85; }
+            100% { top: 120%; opacity: 0; }
+        }
+        
+        @keyframes text-glitch {
+            0%, 100% { 
+                text-shadow: 0 0 12px rgba(255,255,255,0.4); 
+                transform: translateX(0);
+            }
+            25% { 
+                text-shadow: 4px 0 8px rgba(255,0,0,0.6), -4px 0 8px rgba(0,255,0,0.6); 
+                transform: translateX(3px) skew(5deg);
+                clip-path: polygon(0 0, 100% 0, 100% 80%, 0 80%);
+            }
+            50% { 
+                text-shadow: -3px 0 6px rgba(0,0,255,0.6), 3px 0 6px rgba(255,255,0,0.6); 
+                transform: translateX(-3px) skew(-5deg);
+                clip-path: polygon(0 20%, 100% 20%, 100% 100%, 0 100%);
+            }
+            75% { 
+                text-shadow: 0 0 15px rgba(255,255,255,0.7); 
+                transform: translateX(0);
+                clip-path: none;
+            }
+        }
+        
+        @keyframes btn-glitch {
+            0%, 100% { 
+                box-shadow: 0 0 8px rgba(255,255,255,0.3); 
+                border-color: rgba(180, 180, 180, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 15px rgba(255,0,0,0.4), 0 0 25px rgba(0,255,0,0.4); 
+                border-color: rgba(255, 50, 50, 0.6);
+                transform: translateY(3px) skew(5deg);
+            }
+        }
+        
+        @keyframes text-break {
+            0%, 95%, 100% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+            96%, 97%, 98% { 
+                opacity: 0.2;
+                transform: translateY(-5px);
+                text-shadow: 0 0 5px rgba(255,0,0,0.8);
+            }
+        }
+        
+        @keyframes icon-break {
+            0%, 97%, 100% { 
+                opacity: 1;
+            }
+            98%, 99% { 
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+        }
+        
+        @keyframes lcd-break {
+            0%, 90%, 100% { 
+                opacity: 0;
+                height: 0;
+            }
+            91% { 
+                opacity: 1;
+                height: 10px;
+                top: 30%;
+            }
+            92% { 
+                height: 20px;
+                top: 45%;
+            }
+            93% { 
+                height: 5px;
+                top: 60%;
+            }
+            94% { 
+                height: 15px;
+                top: 20%;
+            }
+            95% { 
+                height: 8px;
+                top: 70%;
+            }
+        }
+        
+        /* Эффект загрузки */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+            gap: 25px;
+            color: #fff;
+            font-size: 1.3rem;
+            letter-spacing: 3px;
+        }
+        
+        .loading-bar {
+            width: 350px;
+            height: 6px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0;
+            background: #fff;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+        
+        .loading-text {
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-bottom: 15px;
+            color: #bbb;
+            text-shadow: 0 0 15px rgba(255,255,255,0.3);
+            animation: text-glitch 8s infinite;
+        }
+        
+        .loading-subtext {
+            font-size: 1rem;
+            color: #777;
+            letter-spacing: 2px;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                height: 95vh;
+            }
+            
+            .player-section {
+                border-right: none;
+                border-bottom: 1px solid rgba(100, 100, 100, 0.4);
+                padding: 25px;
+            }
+            
+            .image-container {
+                width: 90%;
+                height: 60%;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Фон в виде пчелиных сот -->
+    <div class="honeycomb-bg"></div>
+    
+    <!-- Эффект загрузки -->
+    <div class="loading">
+        <div class="loading-text">BIO'S FORM [SOUND/AREA]</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loading-progress"></div>
+        </div>
+        <div class="loading-subtext">INITIALIZING AUDIO-VISUAL INTERFACE...</div>
+    </div>
+    
+    <div class="container">
+        <!-- Эффекты ломания экрана -->
+        <div class="lcd-break"></div>
+        
+        <!-- Секция медиаплеера -->
+        <div class="player-section">
+            <div class="player-header">
+                <h1>Bio'S Form [ Sound/AREA ]</h1>
+            </div>
+            
+            <div class="player-controls">
+                <div class="track-info">
+                    <h2>G&N - Sol</h2>
+                    <p>Master REV 4</p>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress" id="song-progress"></div>
+                </div>
+                <div class="time-info">
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
+                </div>
+                
+                <div class="buttons">
+                    <div class="player-btn" id="prev-btn">
+                        <i>⏮</i>
+                    </div>
+                    <div class="player-btn play-btn" id="play-btn">
+                        <i>▶</i>
+                    </div>
+                    <div class="player-btn" id="next-btn">
+                        <i>⏭</i>
+                    </div>
+                </div>
+                
+                <!-- Визуализатор аудио под кнопками -->
+                <div class="audio-visualizer" id="visualizer"></div>
+            </div>
+        </div>
+        
+        <!-- Секция с изображением -->
+        <div class="image-section">
+            <div class="tv-frame"></div>
+            <div class="scanlines"></div>
+            <div class="static"></div>
+            <div class="vignette"></div>
+            <div class="glitch-overlay"></div>
+            <div class="glitch-wave"></div>
+            
+            <div class="image-container">
+                <img id="displayed-image" alt="Bio'S Form Logo">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Аудио элемент -->
+    <audio id="audio-player">
+        <source src="SIGNAL.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы
+            const loadingScreen = document.querySelector('.loading');
+            const loadingProgress = document.getElementById('loading-progress');
+            const playBtn = document.getElementById('play-btn');
+            const playIcon = playBtn.querySelector('i');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const audioPlayer = document.getElementById('audio-player');
+            const songProgress = document.getElementById('song-progress');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalTimeEl = document.getElementById('total-time');
+            const displayedImage = document.getElementById('displayed-image');
+            const visualizer = document.getElementById('visualizer');
+            
+            // Состояние плеера
+            let isPlaying = false;
+            let audioContext, analyser, dataArray;
+            
+            // Создаем бары для визуализатора
+            function createBars() {
+                for (let i = 0; i < 32; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    visualizer.appendChild(bar);
+                }
+            }
+            
+            // Симуляция загрузки
+            let progress = 0;
+            const loadingInterval = setInterval(() => {
+                progress += 2;
+                loadingProgress.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(loadingInterval);
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        // Загружаем изображение после загрузки страницы
+                        displayedImage.src = "Bio'S Form - Logo I.png";
+                        displayedImage.onload = function() {
+                            displayedImage.style.display = 'block';
+                        };
+                        
+                        // Создаем бары
+                        createBars();
+                        
+                        // Установка громкости на максимум
+                        audioPlayer.volume = 1.0;
+                    }, 600);
+                }
+            }, 50);
+            
+            // Функция форматирования времени
+            function formatTime(seconds) {
+                const min = Math.floor(seconds / 60);
+                const sec = Math.floor(seconds % 60);
+                return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+            }
+            
+            // Установка общей продолжительности трека
+            audioPlayer.addEventListener('loadedmetadata', function() {
+                totalTimeEl.textContent = formatTime(audioPlayer.duration);
+            });
+            
+            // Обновление прогресса воспроизведения
+            audioPlayer.addEventListener('timeupdate', function() {
+                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                songProgress.style.width = percent + '%';
+                currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+            });
+            
+            // Перемотка при клике на прогресс-бар
+            document.querySelector('.progress-container').addEventListener('click', function(e) {
+                const width = this.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audioPlayer.duration;
+                
+                audioPlayer.currentTime = (clickX / width) * duration;
+            });
+            
+            // Кнопка Play/Pause
+            playBtn.addEventListener('click', function() {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    playIcon.textContent = '▶';
+                    isPlaying = false;
+                    playBtn.style.backgroundColor = 'rgba(25, 25, 25, 0.8)';
+                    playBtn.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.5)';
+                } else {
+                    // Попытка воспроизведения
+                    audioPlayer.play().then(() => {
+                        playIcon.textContent = '⏸';
+                        isPlaying = true;
+                        
+                        // Анимация кнопки
+                        playBtn.style.backgroundColor = 'rgba(150, 150, 150, 0.4)';
+                        playBtn.style.boxShadow = '0 0 25px rgba(255, 255, 255, 0.3)';
+                        
+                        // Инициализация аудиоанализатора
+                        if (!audioContext) {
+                            initAudioAnalyser();
+                        }
+                    }).catch(error => {
+                        console.error("Playback failed:", error);
+                        // Показать сообщение об ошибке
+                        alert("Audio playback error: " + error.message + "\nPlease check the audio file.");
+                    });
+                }
+            });
+            
+            // Кнопки переключения треков
+            prevBtn.addEventListener('click', function() {
+                audioPlayer.currentTime = 0;
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                audioPlayer.currentTime = audioPlayer.duration - 10;
+            });
+            
+            // Инициализация аудиоанализатора
+            function initAudioAnalyser() {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    const source = audioContext.createMediaElementSource(audioPlayer);
+                    
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                    
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+                    
+                    // Анимация визуализатора
+                    function animateVisualizer() {
+                        if (!isPlaying) return;
+                        
+                        analyser.getByteFrequencyData(dataArray);
+                        const bars = visualizer.querySelectorAll('.bar');
+                        
+                        bars.forEach((bar, i) => {
+                            const value = dataArray[i % dataArray.length] / 255;
+                            const height = 5 + (value * 70);
+                            bar.style.height = `${height}px`;
+                            bar.style.opacity = 0.6 + (value * 0.4);
+                        });
+                        
+                        requestAnimationFrame(animateVisualizer);
+                    }
+                    
+                    animateVisualizer();
+                } catch (e) {
+                    console.error("Audio analyzer initialization failed:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
